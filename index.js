@@ -1,23 +1,23 @@
 const { Client, GatewayIntentBits, SlashCommandBuilder } = require('discord.js');
-require('dotenv').config();  // Importiere dotenv für Umgebungsvariablen
+require('dotenv').config();
 
 const client = new Client({
     intents: [
-        GatewayIntentBits.Guilds, // Notwendig für Slash Commands
+        GatewayIntentBits.Guilds,
     ],
 });
 
-const token = process.env.BOT_TOKEN; // Nutze das Token aus der Umgebungsvariable
-const allowedRoles = ['1075390537101737988', '1075390537101737987']; // Ersetze mit den tatsächlichen Rollen-IDs
+const token = process.env.BOT_TOKEN;
+const allowedRoles = ['1075390537101737988', '1075390537101737987'];
 
-// Speichern der Ausweisdaten und gesperrte Ausweise
+
 let ausweisDaten = {};
 let gesperrteAusweise = {};
 
 client.once('ready', async () => {
     console.log(`Bot ist eingeloggt als ${client.user.tag}`);
 
-    // Slash Commands registrieren
+
     const commands = [
         new SlashCommandBuilder()
             .setName('ausweis')
@@ -79,7 +79,6 @@ client.on('interactionCreate', async interaction => {
     const userId = interaction.user.id;
     const member = await interaction.guild.members.fetch(userId);
 
-    // Funktion zum Überprüfen, ob der Benutzer eine erlaubte Rolle hat
     const hasRole = allowedRoles.some(role => member.roles.cache.has(role));
 
     if (commandName === 'ausweis') {
@@ -92,28 +91,26 @@ client.on('interactionCreate', async interaction => {
             const geburtsdatum = interaction.options.getString('geburtsdatum');
             const herkunft = interaction.options.getString('herkunft');
 
-            // Speichern der Ausweisdaten
             ausweisDaten[userId] = {
                 name,
                 nachname,
                 alter,
                 geburtsdatum,
                 herkunft,
-                gesperrt: false // Standardmäßig ist der Ausweis nicht gesperrt
+                gesperrt: false
             };
 
             await interaction.reply({
                 content: `Personalausweis für ${name} ${nachname} wurde erstellt!`,
-                ephemeral: true // Antwort nur für den Benutzer sichtbar
+                ephemeral: true
             });
         }
 
         if (subCommand === 'anzeigen') {
             if (gesperrteAusweise[userId]) {
-                // Wenn der Ausweis gesperrt ist
                 await interaction.reply({
                     content: 'Dein Ausweis wurde gesperrt. Bitte erstelle einen neuen Ausweis.',
-                    ephemeral: true // Antwort nur für den Benutzer sichtbar
+                    ephemeral: true
                 });
                 return;
             }
@@ -134,7 +131,7 @@ client.on('interactionCreate', async interaction => {
                 **Alter**: ${ausweis.alter}
                 **Geburtsdatum**: ${ausweis.geburtsdatum}
                 **Herkunft**: ${ausweis.herkunft}`,
-                ephemeral: true // Antwort nur für den Benutzer sichtbar
+                ephemeral: true
             });
         }
 
@@ -150,7 +147,6 @@ client.on('interactionCreate', async interaction => {
             const user = interaction.options.getUser('user');
             const userIdToBlock = user.id;
 
-            // Sperren des Ausweises des Benutzers
             gesperrteAusweise[userIdToBlock] = true;
 
             await interaction.reply({
@@ -171,7 +167,6 @@ client.on('interactionCreate', async interaction => {
             const user = interaction.options.getUser('user');
             const userIdToUnblock = user.id;
 
-            // Entsperren des Ausweises des Benutzers
             delete gesperrteAusweise[userIdToUnblock];
 
             await interaction.reply({
